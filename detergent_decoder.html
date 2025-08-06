@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrandRank.AI Detergent Decoder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 0;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+            background: linear-gradient(45deg, #00d4ff, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #a0a8b8;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        .search-input::placeholder {
+            color: #6b7280;
+        }
+
+        .button-section {
+            margin-bottom: 40px;
+        }
+
+        .button-group {
+            margin-bottom: 30px;
+        }
+
+        .button-group-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-buttons, .brand-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .filter-btn, .brand-btn {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover, .brand-btn:hover {
+            background: rgba(0,212,255,0.1);
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+
+        .filter-btn.active, .brand-btn.active {
+            background: #00d4ff;
+            color: #0a0e1a;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: rgba(0,212,255,0.1);
+            padding: 20px 24px;
+            border-bottom: 2px solid rgba(0,212,255,0.3);
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #00d4ff;
+            margin: 0;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+        }
+
+        th {
+            background: rgba(0,212,255,0.05);
+            padding: 16px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #00d4ff;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: top;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .question-cell {
+            font-weight: 500;
+            max-width: 450px;
+            background: rgba(255,255,255,0.01);
+            width: 35%;
+        }
+
+        .brand-cell {
+            text-align: center;
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .highlighted-brand {
+            background: rgba(0,212,255,0.1);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .analysis-section {
+            margin-top: 60px;
+            padding: 40px 0;
+        }
+
+        .analysis-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .analysis-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00d4ff;
+            margin-bottom: 16px;
+        }
+
+        .analysis-subtitle {
+            font-size: 1.1rem;
+            color: #a0a8b8;
+            font-weight: 300;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .analysis-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0,212,255,0.1);
+            border-color: rgba(0,212,255,0.2);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(0,212,255,0.2);
+            padding-bottom: 10px;
+        }
+
+        .insight-content p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .insight-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .winner-section h4 {
+            color: #4ecdc4;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .loser-section h4 {
+            color: #ff6b6b;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .methodology-note {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #a0a8b8;
+            line-height: 1.6;
+        }
+
+        .methodology-note strong {
+            color: #00d4ff;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            th, td {
+                padding: 10px 6px;
+                font-size: 0.75rem;
+            }
+
+            .question-cell {
+                width: 40%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">BrandRank.AI Detergent Decoder</h1>
+            <p class="tagline">From Toxicity to PVA, here's what the Top Answer Engines Think</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search questions or brands...">
+            </div>
+        </div>
+
+        <div class="button-section">
+            <div class="button-group">
+                <h3 class="button-group-title">Brand Spotlight</h3>
+                <div class="brand-buttons">
+                    <button class="brand-btn active" onclick="highlightBrand('')">All Brands</button>
+                    <button class="brand-btn" onclick="highlightBrand('Seventh Generation')">Seventh Generation</button>
+                    <button class="brand-btn" onclick="highlightBrand('Tide')">Tide</button>
+                    <button class="brand-btn" onclick="highlightBrand('All Free Clear')">All Free Clear</button>
+                    <button class="brand-btn" onclick="highlightBrand('ECOS')">ECOS</button>
+                    <button class="brand-btn" onclick="highlightBrand('Puracy')">Puracy</button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <h3 class="button-group-title">Question Categories</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="showSection('all')">All Questions</button>
+                    <button class="filter-btn" onclick="showSection('general')">Trust & Discovery</button>
+                    <button class="filter-btn" onclick="showSection('ingredients')">Ingredient Safety</button>
+                    <button class="filter-btn" onclick="showSection('ingestion')">Ingestion Risk</button>
+                    <button class="filter-btn" onclick="showSection('pva')">PVA & Microplastics</button>
+                    <button class="filter-btn" onclick="showSection('performance')">Cold Water Performance</button>
+                    <button class="filter-btn" onclick="showSection('sensitive')">Free-From Formulas</button>
+                    <button class="filter-btn" onclick="showSection('environmental')">Environmental Impact</button>
+                    <button class="filter-btn" onclick="showSection('regulation')">Regulation & Oversight</button>
+                    <button class="filter-btn" onclick="showSection('brands')">Brand Associations</button>
+                    <button class="filter-btn" onclick="showSection('negative')">Risk Avoidance</button>
+                    <button class="filter-btn" onclick="showSection('education')">Consumer Education</button>
+                    <button class="filter-btn" onclick="showSection('guidance')">Selection Guidance</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section I: General Trust & Product Discovery -->
+        <div class="section" data-section="general">
+            <div class="section-header">
+                <h2 class="section-title">🧼 I. General Trust & Product Discovery</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">What is the safest laundry detergent to use every day?</td>
+                            <td class="brand-cell">Puracy</td>
+                            <td class="brand-cell">Non-toxic, fragrance-free, dermatologist-tested</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">EPA Safer Choice certified, fragrance-free options</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry detergents are best for families concerned about health?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Hypoallergenic, dye-free, fragrance-free brands</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Biokleen Free & Clear</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">The Honest Company</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Molly's Suds</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What should I look for in a laundry detergent if I care about safety?</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Transparent labels, third-party certifications</td>
+                            <td class="brand-cell">EPA Safer Choice certified products</td>
+                            <td class="brand-cell">Attitude</td>
+                            <td class="brand-cell">Hypoallergenic, plant-derived, fragrance-free</td>
+                            <td class="brand-cell">Fragrance-free, dye-free, hypoallergenic, EPA Safer Choice certified</td>
+                            <td class="brand-cell">EPA Safer Choice</td>
+                            <td class="brand-cell">EPA Safer Choice, transparent ingredients, no fragrances/dyes</td>
+                            <td class="brand-cell">Tide Free & Gentle</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry detergents are recommended for sensitive skin or allergies?</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">Ecos Free & Clear</td>
+                            <td class="brand-cell">Tide Free & Gentle</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Tide Free & Clear</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What is the most dermatologist-recommended laundry detergent?</td>
+                            <td class="brand-cell">Tide Free & Gentle</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Cetaphil Baby</td>
+                            <td class="brand-cell">Dreft</td>
+                            <td class="brand-cell">Ecos Free & Clear</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Tide Free and Clear</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">How do I know if a detergent brand is trustworthy?</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Ingredient disclosure, third-party certifications</td>
+                            <td class="brand-cell">Method</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Ecos</td>
+                            <td class="brand-cell">Transparent ingredient lists, third-party certifications</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Third-party certifications and transparent ingredients</td>
+                            <td class="brand-cell">Persil</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents have the cleanest reputation?</td>
+                            <td class="brand-cell">Arm & Hammer Free Clear</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Ecover</td>
+                            <td class="brand-cell">Method</td>
+                            <td class="brand-cell">Meliora Unscented Powder</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Method</td>
+                            <td class="brand-cell">Brands with ingredient transparency and certifications</td>
+                            <td class="brand-cell">Molly's Suds</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section II: Ingredient Safety & Chemical Transparency -->
+        <div class="section" data-section="ingredients">
+            <div class="section-header">
+                <h2 class="section-title">🧪 II. Ingredient Safety & Chemical Transparency</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Do laundry detergents contain harmful ingredients?</td>
+                            <td class="brand-cell">Some do; avoid phosphates, fragrances, dyes</td>
+                            <td class="brand-cell">Some do—check for sulfates, optical brighteners, synthetic fragrances</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Some contain synthetic dyes, fragrances, surfactants</td>
+                            <td class="brand-cell">Yes, some contain phosphates, phthalates, or 1,4-dioxane</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Some may contain skin irritants like dyes and fragrances</td>
+                            <td class="brand-cell">Yes. Avoid Disodium Distyrylbiphenyl Disulfonate</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are there cancer-causing chemicals in laundry detergent?</td>
+                            <td class="brand-cell">Avoid detergents with 1,4-dioxane</td>
+                            <td class="brand-cell">Yes, 1,4-dioxane and formaldehyde-releasing preservatives</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Avoid 1,4-dioxane (some conventional detergents)</td>
+                            <td class="brand-cell">Not common in top non-toxic brands</td>
+                            <td class="brand-cell">Possible, e.g., 1,4-dioxane in trace amounts</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">1,4-dioxane is a concern but present at low levels</td>
+                            <td class="brand-cell">1,4-Dioxane is a known concern</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are detergent dyes and fragrances safe for everyday use?</td>
+                            <td class="brand-cell">Seventh Generation Free & Clear</td>
+                            <td class="brand-cell">They can cause irritation; choose fragrance-free for sensitive users</td>
+                            <td class="brand-cell">Method</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Avoided in 'free and clear' formulas</td>
+                            <td class="brand-cell">Often irritants; avoid for sensitive skin</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Generally safe but can irritate sensitive skin</td>
+                            <td class="brand-cell">Not always—many people react to artificial fragrances</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergent ingredients are banned in other countries?</td>
+                            <td class="brand-cell">Phosphates, methylisothiazolinone</td>
+                            <td class="brand-cell">Yes, phosphates and some surfactants banned in the EU</td>
+                            <td class="brand-cell">1,4-dioxane (many conventional detergents)</td>
+                            <td class="brand-cell">Persil</td>
+                            <td class="brand-cell">Some synthetic phosphates, dyes banned</td>
+                            <td class="brand-cell">Phosphates, nonylphenol ethoxylates (EU, Canada)</td>
+                            <td class="brand-cell">Tide products</td>
+                            <td class="brand-cell">Phosphates restricted in various countries</td>
+                            <td class="brand-cell">1,4-Dioxane is banned or restricted in places like New York</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are surfactants in laundry detergent toxic to humans or pets?</td>
+                            <td class="brand-cell">Puracy</td>
+                            <td class="brand-cell">Some surfactants can be irritating or environmentally harmful</td>
+                            <td class="brand-cell">Linear alkylbenzene sulfonates</td>
+                            <td class="brand-cell">Avoid sodium lauryl sulfate (SLS)</td>
+                            <td class="brand-cell">Ecos are safe</td>
+                            <td class="brand-cell">Some (e.g., SLS) can irritate skin or harm pets if ingested</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Generally safe in diluted form</td>
+                            <td class="brand-cell">Usually safe when used properly, but Cocamidopropyl Betaine can irritate</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">How transparent are detergent companies about their ingredients?</td>
+                            <td class="brand-cell">Seventh Generation, ECOS, Puracy</td>
+                            <td class="brand-cell">A few do; others use vague terms like "fragrance"</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Biokleen, Ecos provide transparency, certifications</td>
+                            <td class="brand-cell">Varies; some brands use SmartLabel, others vague</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Transparency varies by company</td>
+                            <td class="brand-cell">Some aren't; Lush was cited for misleading claims</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry brands follow health agency standards like the EPA or EU?</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Some follow EPA Safer Choice and EU REACH compliance</td>
+                            <td class="brand-cell">EPA Safer Choice certified brands</td>
+                            <td class="brand-cell">Ecover</td>
+                            <td class="brand-cell">Ecos with EPA Safer Choice</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">EPA Safer Choice certified brands</td>
+                            <td class="brand-cell">Dropps is certified and eco-friendly</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents avoid synthetic ingredients or harsh chemicals?</td>
+                            <td class="brand-cell">Puracy, Seventh Generation</td>
+                            <td class="brand-cell">Yes, Tru Earth and Blueland highlight these efforts</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Biokleen</td>
+                            <td class="brand-cell">Branch Basics, Molly's Suds</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation, Babyganics, Puracy</td>
+                            <td class="brand-cell">Molly's Suds is a clean, natural option</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Do any detergents include ingredients under FDA or EPA review?</td>
+                            <td class="brand-cell">Tide, Seventh Generation</td>
+                            <td class="brand-cell">Yes—check EPA and FDA databases for current evaluations</td>
+                            <td class="brand-cell">Optical brighteners, synthetic fragrances</td>
+                            <td class="brand-cell">Downy</td>
+                            <td class="brand-cell">Not specified for top brands</td>
+                            <td class="brand-cell">1,4-dioxane under EPA scrutiny</td>
+                            <td class="brand-cell">Check Seventh Generation website</td>
+                            <td class="brand-cell">EPA reviews chemicals including some in detergents</td>
+                            <td class="brand-cell">Yes, like 1,4-Dioxane, found in some detergents</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section III: Ingestion Risk & Packaging Safety -->
+        <div class="section" data-section="ingestion">
+            <div class="section-header">
+                <h2 class="section-title">⚠️ III. Ingestion Risk & Packaging Safety</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">What happens if someone swallows a laundry pod?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">It can be dangerous—call poison control immediately</td>
+                            <td class="brand-cell">Call Poison Control immediately</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Poisoning risk; pods hazardous if ingested</td>
+                            <td class="brand-cell">Severe irritation, burns, or poisoning; seek immediate medical help</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Serious chemical burns, call poison control immediately</td>
+                            <td class="brand-cell">Call Poison Control immediately</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are laundry pods safe for children or elderly people?</td>
+                            <td class="brand-cell">Tide, Gain redesigned</td>
+                            <td class="brand-cell">No—keep pods out of reach of children and vulnerable adults</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Avoid all pods (use liquid)</td>
+                            <td class="brand-cell">Pods carry ingestion risk</td>
+                            <td class="brand-cell">No, high ingestion risk</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Serious poisoning risk for vulnerable populations</td>
+                            <td class="brand-cell">No—ingestion risk is too high</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What are companies doing to reduce ingestion risk with laundry pods?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Yes, bitter coatings and child-resistant packaging</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Pods redesigned with safety features</td>
+                            <td class="brand-cell">Child-resistant packaging, opaque containers</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Bitter agents and child-resistant packaging</td>
+                            <td class="brand-cell">Tide use better packaging and run awareness campaigns</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Have detergent pods been redesigned due to safety concerns?</td>
+                            <td class="brand-cell">Tide, Gain</td>
+                            <td class="brand-cell">Yes—particularly among children under 5</td>
+                            <td class="brand-cell">Yes (2019 safety redesigns)</td>
+                            <td class="brand-cell">Persil</td>
+                            <td class="brand-cell">Yes, many redesigned for child safety</td>
+                            <td class="brand-cell">Yes, some brands use less appealing designs</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Yes, packaging and bitter agents added</td>
+                            <td class="brand-cell">Yes, Dropps improved dissolvability, but concerns remain</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry products are most commonly involved in accidental poisonings?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Laundry pods</td>
+                            <td class="brand-cell">Laundry pods</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Detergent pods</td>
+                            <td class="brand-cell">Laundry pods</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Laundry pods</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section IV: PVA, Film Dissolution & Microplastic Concerns -->
+        <div class="section" data-section="pva">
+            <div class="section-header">
+                <h2 class="section-title">🧫 IV. PVA, Film Dissolution & Microplastic Concerns</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Do detergent pods release microplastics into the environment?</td>
+                            <td class="brand-cell">Tide, Gain contributes</td>
+                            <td class="brand-cell">Yes, especially during breakdown of plastic films</td>
+                            <td class="brand-cell">Yes</td>
+                            <td class="brand-cell">Many conventional brands</td>
+                            <td class="brand-cell">Some microplastic pollution concern from films</td>
+                            <td class="brand-cell">Possible, due to PVA film</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Debate continues about PVA film biodegradability</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Is polyvinyl alcohol biodegradable in home washing conditions?</td>
+                            <td class="brand-cell">Partially; varies by temperature</td>
+                            <td class="brand-cell">Not fully—PVA can persist in certain conditions</td>
+                            <td class="brand-cell">Polyvinyl alcohol film</td>
+                            <td class="brand-cell">Not fully proven (avoid if concerned)</td>
+                            <td class="brand-cell">Biodegradable under certain conditions, not always in cold</td>
+                            <td class="brand-cell">Partially biodegradable, not fully in home washing</td>
+                            <td class="brand-cell">Generally considered biodegradable</td>
+                            <td class="brand-cell">Concerns about complete degradation in all systems</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What is PVA and why is it used in laundry pods?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">PVA is a film used to encapsulate detergent; it dissolves in water</td>
+                            <td class="brand-cell">PVA (polyvinyl alcohol)</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Water-soluble film to enclose detergent</td>
+                            <td class="brand-cell">Dissolvable film for pod delivery</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Water-soluble polymer that creates pod film</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are laundry pod films fully dissolvable in cold water?</td>
+                            <td class="brand-cell">Yes for Tide, but some residue</td>
+                            <td class="brand-cell">Not always, especially in cold or short cycles</td>
+                            <td class="brand-cell">Cold water performance varies</td>
+                            <td class="brand-cell">Persil claims full dissolution</td>
+                            <td class="brand-cell">Mostly yes, depends on formulation</td>
+                            <td class="brand-cell">Not always fully</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">May not dissolve completely in very cold water</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are environmental groups concerned about detergent pod materials?</td>
+                            <td class="brand-cell">Yes; PVA and residue potential</td>
+                            <td class="brand-cell">Yes—many environmental groups raise concerns about PVA</td>
+                            <td class="brand-cell">Environmental Working Group</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Yes, microplastic and biodegradability issues</td>
+                            <td class="brand-cell">Yes, PVA persistence worries</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Yes, concerns about biodegradability and plastic pollution</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents should I avoid if I'm worried about PVA?</td>
+                            <td class="brand-cell">Tide Pods, Gain Flings</td>
+                            <td class="brand-cell">Avoid pods or products that use PVA if concerned</td>
+                            <td class="brand-cell">Tide and other PVA-containing pods</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">No specific brands identified; check materials</td>
+                            <td class="brand-cell">Earth Breeze</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Any pod or strip product contains PVA</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are claims about pod film safety backed by science?</td>
+                            <td class="brand-cell">Mixed science; still debated</td>
+                            <td class="brand-cell">Mixed evidence—independent research is still ongoing</td>
+                            <td class="brand-cell">Limited independent studies</td>
+                            <td class="brand-cell">Unverified (lack independent studies)</td>
+                            <td class="brand-cell">Mixed; some supported, some debate</td>
+                            <td class="brand-cell">Limited scientific consensus</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Mixed evidence from manufacturers vs. environmental groups</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section V: Cold Water Cleaning & Performance Claims -->
+        <div class="section" data-section="performance">
+            <div class="section-header">
+                <h2 class="section-title">❄️ V. Cold Water Cleaning & Performance Claims</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Do laundry detergents work well in cold water?</td>
+                            <td class="brand-cell">Tide Coldwater Clean</td>
+                            <td class="brand-cell">Some detergents work well; enzyme-based ones are best</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Tide Cold Water Clean</td>
+                            <td class="brand-cell">Biokleen Free & Clear performs well cold</td>
+                            <td class="brand-cell">Yes, many work well</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Yes, modern detergents are cold water effective</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What's the best detergent for cold water stain removal?</td>
+                            <td class="brand-cell">Tide Coldwater Clean</td>
+                            <td class="brand-cell">Try Tide Coldwater Clean or Persil ProClean</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Persil ProClean</td>
+                            <td class="brand-cell">Biokleen Free & Clear</td>
+                            <td class="brand-cell">Tide Ultra Oxi</td>
+                            <td class="brand-cell">OxiClean</td>
+                            <td class="brand-cell">Tide Coldwater Clean</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Do pods clean as well as liquid detergent in low temperatures?</td>
+                            <td class="brand-cell">Pods work, liquid better in very cold</td>
+                            <td class="brand-cell">Not always; liquids may outperform in cold cycles</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Persil ProClean pods</td>
+                            <td class="brand-cell">Pods clean effectively but may need warmer water</td>
+                            <td class="brand-cell">Liquids generally better</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">May not dissolve as well as liquid in very cold water</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Can one detergent really handle cleaning, brightening, and stain removal?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Only if it has enzymes, surfactants, and stabilizers</td>
+                            <td class="brand-cell">All-in-one claims lack verification</td>
+                            <td class="brand-cell">Tide Hygienic Clean</td>
+                            <td class="brand-cell">Biokleen claims combined effectiveness</td>
+                            <td class="brand-cell">Yes, Tide Hygienic Clean</td>
+                            <td class="brand-cell">Tide Oxi</td>
+                            <td class="brand-cell">Multi-purpose formulas exist but separate products may work better</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are detergent performance claims independently verified?</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Some are, like those reviewed by Consumer Reports</td>
+                            <td class="brand-cell">Limited independent testing</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Limited transparency; EPA Safer Choice helps</td>
+                            <td class="brand-cell">Some by Consumer Reports, EWG</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Often based on internal testing, limited third-party verification</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section VI: "Clean," Free-From & Sensitive-Skin Formulas -->
+        <div class="section" data-section="sensitive">
+            <div class="section-header">
+                <h2 class="section-title">🌱 VI. "Clean," Free-From & Sensitive-Skin Formulas</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Are "free and clear" detergents really safer?</td>
+                            <td class="brand-cell">Yes; e.g., Seventh Generation Free & Clear</td>
+                            <td class="brand-cell">Often yes, but formulations still vary</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">Generally yes, fewer irritants/allergens</td>
+                            <td class="brand-cell">Often, but check for allergens</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Generally safer for sensitive skin, lack dyes and fragrances</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Do any detergents avoid dyes, phosphates, and chlorine?</td>
+                            <td class="brand-cell">Seventh Generation, ECOS</td>
+                            <td class="brand-cell">Yes—many clean-label brands meet this criteria</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Ecos Free & Clear, Molly's Suds avoid these</td>
+                            <td class="brand-cell">Charlie's Soap</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Many free and clear and eco-friendly brands</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What is the best detergent for baby clothes or delicate fabrics?</td>
+                            <td class="brand-cell">Dreft</td>
+                            <td class="brand-cell">Babyganics and Dreft are designed for baby clothes</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Dreft</td>
+                            <td class="brand-cell">Ecos Free & Clear</td>
+                            <td class="brand-cell">Dreft Stage 1</td>
+                            <td class="brand-cell">The Honest Company</td>
+                            <td class="brand-cell">Dreft</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents are fragrance-free and non-toxic?</td>
+                            <td class="brand-cell">Seventh Generation Free & Clear</td>
+                            <td class="brand-cell">Yes—look for "free and clear" and "non-toxic" labels</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Molly's Suds</td>
+                            <td class="brand-cell">Meliora Unscented Powder</td>
+                            <td class="brand-cell">Molly's Suds</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Seventh Generation and Puracy offer both</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are clean-label laundry detergents better for people with allergies?</td>
+                            <td class="brand-cell">Puracy</td>
+                            <td class="brand-cell">Yes—especially those without harsh preservatives</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Puracy</td>
+                            <td class="brand-cell">Meliora, Ecos recommended</td>
+                            <td class="brand-cell">Yes, better for sensitive skin</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Clean-label detergents exclude common allergens</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section VII: Environmental Impact & Biodegradability -->
+        <div class="section" data-section="environmental">
+            <div class="section-header">
+                <h2 class="section-title">🌍 VII. Environmental Impact & Biodegradability</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Do laundry detergents harm aquatic life?</td>
+                            <td class="brand-cell">Avoid phosphates, surfactants in conventional</td>
+                            <td class="brand-cell">Yes—phosphates and surfactants can harm fish and plants</td>
+                            <td class="brand-cell">Phosphates and surfactants</td>
+                            <td class="brand-cell">Gain formulas</td>
+                            <td class="brand-cell">Some conventional with phosphates, synthetic surfactants</td>
+                            <td class="brand-cell">Yes, via phosphates, surfactants</td>
+                            <td class="brand-cell">Tide products</td>
+                            <td class="brand-cell">Phosphates and surfactants can harm aquatic life</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What detergent ingredients pollute water systems?</td>
+                            <td class="brand-cell">Phosphates, nonylphenol ethoxylates (NPEs)</td>
+                            <td class="brand-cell">Surfactants, phosphonates, and optical brighteners</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Nonylphenol ethoxylates (NPEs) in imports</td>
+                            <td class="brand-cell">Phosphates, certain surfactants</td>
+                            <td class="brand-cell">Phosphates, nonylphenol ethoxylates</td>
+                            <td class="brand-cell">Phosphates, surfactants in some detergents</td>
+                            <td class="brand-cell">Phosphates cause harmful algal blooms</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are detergent ingredients biodegradable in wastewater treatment plants?</td>
+                            <td class="brand-cell">ECOS, Puracy</td>
+                            <td class="brand-cell">Some do, depending on ingredient type and plant efficiency</td>
+                            <td class="brand-cell">Conventional detergents</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Plant-derived biodegrade well, synthetic less</td>
+                            <td class="brand-cell">Some, like plant-based detergents</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Most surfactants are designed to be biodegradable</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry products leave the biggest environmental footprint?</td>
+                            <td class="brand-cell">Tide, Gain</td>
+                            <td class="brand-cell">Single-use pods and heavily packaged liquids are worse</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Conventional with synthetic chemicals, plastic packaging</td>
+                            <td class="brand-cell">Liquid detergents in plastic jugs</td>
+                            <td class="brand-cell">Some Tide</td>
+                            <td class="brand-cell">Traditional liquids and pods with PVA</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Do detergent pods create long-term plastic waste?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Yes—especially those with microplastics and PVA</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Pod films mostly PVA, somewhat biodegradable</td>
+                            <td class="brand-cell">Yes, PVA contributes</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Debate about PVA persistence as microplastics</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">How do detergent brands compare on sustainability and biodegradability?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands vary significantly in their environmental commitments</td>
+                            <td class="brand-cell">EPA and FDA</td>
+                            <td class="brand-cell">Dropps</td>
+                            <td class="brand-cell">Ecos, Branch Basics, Molly's Suds</td>
+                            <td class="brand-cell">Earth Breeze leads</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Concentrated formulas and strips without PVA are more sustainable</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section VIII: Regulation, Litigation & Oversight -->
+        <div class="section" data-section="regulation">
+            <div class="section-header">
+                <h2 class="section-title">📜 VIII. Regulation, Litigation & Oversight</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">Are laundry detergents regulated for health and safety?</td>
+                            <td class="brand-cell">Yes, by EPA, CPSC</td>
+                            <td class="brand-cell">EPA and EU regulate many active ingredients</td>
+                            <td class="brand-cell">Optical brighteners, fragrances</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Yes, via EPA, FDA, EU regulations</td>
+                            <td class="brand-cell">Minimally, no full disclosure required</td>
+                            <td class="brand-cell">EPA Safer Choice (voluntary)</td>
+                            <td class="brand-cell">Yes, EPA and CPSC regulate detergents</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are any detergent ingredients currently under EPA or EU review?</td>
+                            <td class="brand-cell">Surfactants, fragrance chemicals</td>
+                            <td class="brand-cell">Yes—some ingredients like 1,4-dioxane under review</td>
+                            <td class="brand-cell">Multiple class-action lawsuits</td>
+                            <td class="brand-cell">Avoid formaldehyde-releasing preservatives</td>
+                            <td class="brand-cell">Not specified for top brands</td>
+                            <td class="brand-cell">1,4-dioxane, some surfactants</td>
+                            <td class="brand-cell">EPA and EU regularly review chemical ingredients</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Have there been lawsuits or petitions related to laundry pods?</td>
+                            <td class="brand-cell">Yes, mostly Tide Pods</td>
+                            <td class="brand-cell">Yes—especially around child safety and ingredient transparency</td>
+                            <td class="brand-cell">No (voluntary disclosure)</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Known but specifics not in results</td>
+                            <td class="brand-cell">Yes, safety concerns raised</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Yes, lawsuits concerning pod safety and environmental impact</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Are detergent companies required to disclose all their ingredients?</td>
+                            <td class="brand-cell">Seventh Generation, ECOS</td>
+                            <td class="brand-cell">No, but some are encouraged to do so voluntarily</td>
+                            <td class="brand-cell">EPA Safer Choice</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Partial disclosure; proprietary formulations confidential</td>
+                            <td class="brand-cell">No, fragrances often exempt</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Not required to disclose all, especially fragrances</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What certifications ensure detergent safety for people and the planet?</td>
+                            <td class="brand-cell">EPA Safer Choice, MADE SAFE</td>
+                            <td class="brand-cell">EPA Safer Choice and EWG Verified are good examples</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">EPA Safer Choice, MADE SAFE®, Leaping Bunny</td>
+                            <td class="brand-cell">EPA Safer Choice, EWG Verified</td>
+                            <td class="brand-cell">EPA Safer Choice</td>
+                            <td class="brand-cell">EPA Safer Choice and Green Seal certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section IX: Brand Association Prompts -->
+        <div class="section" data-section="brands">
+            <div class="section-header">
+                <h2 class="section-title">🏷️ IX. Brand Association Prompts</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">What laundry brand is most associated with cold water cleaning?</td>
+                            <td class="brand-cell">Tide Coldwater Clean</td>
+                            <td class="brand-cell">Tide Coldwater Clean leads in this area</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Tide Cold Water Clean</td>
+                            <td class="brand-cell">Biokleen Free & Clear</td>
+                            <td class="brand-cell">Tide Ultra Oxi</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergent brand is known for 3-in-1 performance?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Persil ProClean promotes multi-function claims</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Persil ProClean</td>
+                            <td class="brand-cell">Biokleen</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Tide Oxi</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What brand is most associated with dissolvable pod technology?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Tide and Persil market this technology</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Dropps</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Dropps</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergent brand leads in environmental innovation?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Blueland and Dropps lead here</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tru Earth</td>
+                            <td class="brand-cell">Ecos</td>
+                            <td class="brand-cell">Earth Breeze</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Dropps, Earth Breeze, Blueland</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What detergent brand is most vocal about ingredient safety?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation and Attitude disclose ingredients</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Heritage Park</td>
+                            <td class="brand-cell">The Honest Company</td>
+                            <td class="brand-cell">Various brands</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What brand is most associated with using PVA in its product delivery?</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Tide and Gain use PVA in pod films</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Most pod brands; no specific identified</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry brand is most associated with EPA Safer Choice certification?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation and ECOS carry this certification</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Ecos</td>
+                            <td class="brand-cell">Charlie's Soap</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What detergent brand is most trusted by dermatologists and pediatricians?</td>
+                            <td class="brand-cell">Dreft, Tide Free & Gentle</td>
+                            <td class="brand-cell">Tide Free & Gentle and All Free Clear are trusted</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">Ecos Free & Clear</td>
+                            <td class="brand-cell">All Free & Clear</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Dreft</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section X: Directionally Negative Prompts -->
+        <div class="section" data-section="negative">
+            <div class="section-header">
+                <h2 class="section-title">🧨 X. Directionally Negative Prompts</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">What laundry detergents should I avoid if I care about microplastics?</td>
+                            <td class="brand-cell">Tide Pods, Gain Flings</td>
+                            <td class="brand-cell">Avoid pods and non-dissolvable plastics</td>
+                            <td class="brand-cell">Conventional with synthetic fragrances</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Pod-based detergents raise concerns</td>
+                            <td class="brand-cell">Earth Breeze</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">All laundry pods and strips</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry brands use questionable or controversial ingredients?</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Check for sulfates, 1,4-dioxane, and optical brighteners</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Not specified for top clean brands</td>
+                            <td class="brand-cell">Babyganics</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Brands with phosphates, synthetic fragrances, optical brighteners</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergents are accused of greenwashing?</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Some use sustainability language without meaningful action</td>
+                            <td class="brand-cell">Some store brands</td>
+                            <td class="brand-cell">Method</td>
+                            <td class="brand-cell">Not specified in results</td>
+                            <td class="brand-cell">Green Works</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands marketing green but using controversial ingredients</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergent pods have issues with full dissolution?</td>
+                            <td class="brand-cell">Store brands, some Tide in cold</td>
+                            <td class="brand-cell">Some pods fail to dissolve in cold water</td>
+                            <td class="brand-cell">Optical brighteners</td>
+                            <td class="brand-cell">Generic/store brands</td>
+                            <td class="brand-cell">Some pods have dissolution issues</td>
+                            <td class="brand-cell">Dropps</td>
+                            <td class="brand-cell">OxiClean</td>
+                            <td class="brand-cell">Incomplete dissolution in very cold water or short cycles</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What detergent ingredients are flagged by environmental advocates?</td>
+                            <td class="brand-cell">Fragrances, optical brighteners, phosphates</td>
+                            <td class="brand-cell">PVA, synthetic fragrances, and preservatives</td>
+                            <td class="brand-cell">Conventional with fragrances</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Synthetic dyes, phosphates, non-biodegradable surfactants</td>
+                            <td class="brand-cell">Phosphates, optical brighteners</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Phosphates, surfactants, and PVA film</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergents might be unsafe for babies or pets?</td>
+                            <td class="brand-cell">Gain, store brands</td>
+                            <td class="brand-cell">Pods and scented products are often risky</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Those with fragrances, dyes, harsh chemicals</td>
+                            <td class="brand-cell">Scented pods</td>
+                            <td class="brand-cell">Tide Oxi</td>
+                            <td class="brand-cell">Detergents with strong fragrances, dyes, harsh chemicals</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents are most likely to cause allergic reactions?</td>
+                            <td class="brand-cell">Fragrance, dye brands</td>
+                            <td class="brand-cell">Fragrances and dyes are common culprits</td>
+                            <td class="brand-cell">Scented detergents</td>
+                            <td class="brand-cell">Avoid methylchloroisothiazolinone</td>
+                            <td class="brand-cell">Those with fragrances, dyes</td>
+                            <td class="brand-cell">Persil</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Detergents with synthetic fragrances and dyes</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry products may worsen indoor air quality?</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Scented products and certain VOCs may contribute</td>
+                            <td class="brand-cell">Conventional brands</td>
+                            <td class="brand-cell">Gain</td>
+                            <td class="brand-cell">Strong fragrance detergents, sprays</td>
+                            <td class="brand-cell">Fragranced detergents</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Strong synthetic fragrances releasing VOCs</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry detergents use marketing to hide unsafe ingredients?</td>
+                            <td class="brand-cell">Brands lacking transparency; avoid vague blends</td>
+                            <td class="brand-cell">"Green" branding sometimes masks risky ingredients</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Some 'natural' brands</td>
+                            <td class="brand-cell">Not specified for top brands</td>
+                            <td class="brand-cell">Some "natural" brands</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands using vague fragrance terms</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What brands have received criticism for their pod technology?</td>
+                            <td class="brand-cell">Tide, Gain</td>
+                            <td class="brand-cell">Brands have faced scrutiny over pod dissolution and ingestion risk</td>
+                            <td class="brand-cell">Conventional detergent companies</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">General industry criticism</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">The Honest Company</td>
+                            <td class="brand-cell">Tide criticized for pod challenge and environmental impact</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry brands have failed to adapt to growing safety concerns?</td>
+                            <td class="brand-cell">Store brands, Gain</td>
+                            <td class="brand-cell">Some have lagged on disclosure and eco-friendly reformulation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Generic pods</td>
+                            <td class="brand-cell">Not specified in results</td>
+                            <td class="brand-cell">None named definitively</td>
+                            <td class="brand-cell">All Free Clear</td>
+                            <td class="brand-cell">Major brands slow to change formulas or packaging</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section XI: Safety Education & Consumer Transparency -->
+        <div class="section" data-section="education">
+            <div class="section-header">
+                <h2 class="section-title">🧠 XI. Safety Education & Consumer Transparency</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">What laundry detergent does the best job educating consumers about safety?</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Blueland and Dropps offer clear educational content</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Heritage Park</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands providing full ingredient lists and explanations</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergent brands explain their ingredients clearly to the public?</td>
+                            <td class="brand-cell">Seventh Generation, ECOS</td>
+                            <td class="brand-cell">Seventh Generation and ECOS publish ingredient guides</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">ECOS</td>
+                            <td class="brand-cell">Biokleen, Branch Basics</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands with transparent ingredient lists and certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry products are most transparent about chemical risks?</td>
+                            <td class="brand-cell">Puracy, ECOS</td>
+                            <td class="brand-cell">Attitude and Blueland explain formulation logic</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Attitude</td>
+                            <td class="brand-cell">Biokleen, Branch Basics</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Products with certifications requiring full ingredient disclosure</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which laundry companies offer the most helpful safety content online?</td>
+                            <td class="brand-cell">Seventh Generation, Tide</td>
+                            <td class="brand-cell">Yes—some brands produce detailed safety blogs and videos</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Ecos, Branch Basics</td>
+                            <td class="brand-cell">Heritage Park</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Brands with dedicated safety website sections</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">Which detergents are most proactive in teaching consumers about ingredients?</td>
+                            <td class="brand-cell">Seventh Generation, Puracy</td>
+                            <td class="brand-cell">Dropps and Blueland use consumer-friendly content</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Biokleen</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Charlie's Soap</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Brands actively promoting ingredient lists and certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry products are most transparent about how they are made?</td>
+                            <td class="brand-cell">ECOS, Seventh Generation</td>
+                            <td class="brand-cell">ECOS and Attitude disclose full production processes</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tru Earth</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Tide</td>
+                            <td class="brand-cell">Brands sharing manufacturing processes and sourcing</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What laundry brands go out of their way to explain product safety?</td>
+                            <td class="brand-cell">Puracy</td>
+                            <td class="brand-cell">Blueland and Seventh Generation lead here</td>
+                            <td class="brand-cell">EPA Safer Choice certification</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Branch Basics</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">Brands highlighting safety certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section XII: Consumer Framing & "How to Choose" -->
+        <div class="section" data-section="guidance">
+            <div class="section-header">
+                <h2 class="section-title">🧩 XII. Consumer Framing & "How to Choose"</h2>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="question-cell">Question</th>
+                            <th class="brand-cell">Amazon Rufus</th>
+                            <th class="brand-cell">ChatGPT</th>
+                            <th class="brand-cell">Claude</th>
+                            <th class="brand-cell">Deepseek</th>
+                            <th class="brand-cell">Perplexity</th>
+                            <th class="brand-cell">Grok</th>
+                            <th class="brand-cell">Llama 4</th>
+                            <th class="brand-cell">Gemini</th>
+                            <th class="brand-cell">Reddit Answers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="question-cell">How do I choose a safe and effective laundry detergent?</td>
+                            <td class="brand-cell">Pick EPA-certified, fragrance-free, transparent</td>
+                            <td class="brand-cell">Use EWG or EPA Safer Choice databases</td>
+                            <td class="brand-cell">Synthetic fragrances, dyes</td>
+                            <td class="brand-cell">Look for EPA Safer Choice</td>
+                            <td class="brand-cell">Look for hypoallergenic, plant-based, fragrance/dye-free, EPA certified</td>
+                            <td class="brand-cell">Prioritize fragrance-free, hypoallergenic, certified brands</td>
+                            <td class="brand-cell">Seventh Generation</td>
+                            <td class="brand-cell">Free and clear formulas, third-party certifications, read ingredients</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What are red flags when evaluating laundry detergents?</td>
+                            <td class="brand-cell">Vague ingredients, strong fragrance, no certification</td>
+                            <td class="brand-cell">Vague labeling, strong artificial scents</td>
+                            <td class="brand-cell">Optical brighteners, phosphates, synthetic fragrances</td>
+                            <td class="brand-cell">Fragrance without disclosure</td>
+                            <td class="brand-cell">Synthetic dyes, fragrances, phosphates, unclear disclosure</td>
+                            <td class="brand-cell">Vague "fragrance," phosphates, dyes</td>
+                            <td class="brand-cell">EPA Safer Choice (voluntary)</td>
+                            <td class="brand-cell">Vague fragrance listings, strong artificial scents, no certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What ingredients should I avoid in a detergent?</td>
+                            <td class="brand-cell">Fragrances, phosphates, chlorine, brighteners</td>
+                            <td class="brand-cell">1,4-dioxane, SLS, phosphates, artificial fragrance</td>
+                            <td class="brand-cell">Third-party certifications</td>
+                            <td class="brand-cell">1,4-dioxane, phosphates, SLS</td>
+                            <td class="brand-cell">Synthetic dyes, fragrances, phosphates, certain surfactants</td>
+                            <td class="brand-cell">Phthalates, optical brighteners, SLS</td>
+                            <td class="brand-cell">Check Seventh Generation website</td>
+                            <td class="brand-cell">Dyes, synthetic fragrances, phosphates, optical brighteners</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">How can I tell if a laundry detergent is truly non-toxic?</td>
+                            <td class="brand-cell">Look for EPA Safer Choice, clear labels</td>
+                            <td class="brand-cell">Third-party verification, full ingredient transparency</td>
+                            <td class="brand-cell">EPA Safer Choice certification</td>
+                            <td class="brand-cell">EPA Safer Choice certification</td>
+                            <td class="brand-cell">Check MADE SAFE®, EPA Safer Choice, transparency</td>
+                            <td class="brand-cell">EWG Verified, full ingredient disclosure</td>
+                            <td class="brand-cell">Tide Pods</td>
+                            <td class="brand-cell">EPA Safer Choice, Green Seal, or EWG Verified certifications</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                        <tr>
+                            <td class="question-cell">What matters most when selecting a detergent for long-term health?</td>
+                            <td class="brand-cell">Ingredient safety, fragrance-free, trusted certification</td>
+                            <td class="brand-cell">Avoiding harmful chemicals, verified safety data</td>
+                            <td class="brand-cell">EPA Safer Choice certification</td>
+                            <td class="brand-cell">Avoid synthetic fragrances, dyes</td>
+                            <td class="brand-cell">Avoid irritants, carcinogens, persistent chemicals</td>
+                            <td class="brand-cell">Avoid fragrances, dyes, and endocrine disruptors</td>
+                            <td class="brand-cell">Seventh Generation (safety, sustainability focus)</td>
+                            <td class="brand-cell">Avoiding allergens and choosing transparent, safe ingredients</td>
+                            <td class="brand-cell">NA</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Analysis Section -->
+        <div class="analysis-section">
+            <div class="analysis-header">
+                <h2 class="analysis-title">Executive Analysis</h2>
+                <p class="analysis-subtitle">Key insights from comparative AI engine responses across 73 laundry safety questions</p>
+            </div>
+            
+            <div class="analysis-grid">
+                <div class="analysis-card">
+                    <h3 class="card-title">Brand Winners & Losers</h3>
+                    <div class="insight-content">
+                        <div class="winner-section">
+                            <h4>Clear Winners</h4>
+                            <p><strong>Seventh Generation:</strong> Leads safety recommendations across engines</p>
+                            <p><strong>All Free Clear:</strong> Universal dermatologist favorite</p>
+                            <p><strong>Heritage Park:</strong> Consumer education leader per Grok</p>
+                            <p><strong>Earth Breeze:</strong> Environmental innovation champion</p>
+                        </div>
+                        <div class="loser-section">
+                            <h4>High Risk Brands</h4>
+                            <p><strong>Tide Pods:</strong> Flagged for 1,4-dioxane, PVA, ingestion risks</p>
+                            <p><strong>Gain:</strong> Problematic fragrances, synthetic chemicals</p>
+                            <p><strong>Babyganics:</strong> Questionable ingredients per Grok</p>
+                            <p><strong>Green Works:</strong> Accused of greenwashing</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <h3 class="card-title">Engine Personalities</h3>
+                    <div class="insight-content">
+                        <p><strong>Amazon Rufus:</strong> Consumer-focused product warnings</p>
+                        <p><strong>ChatGPT:</strong> Educational criteria over brands</p>
+                        <p><strong>Claude:</strong> Technical certifications focus</p>
+                        <p><strong>Deepseek:</strong> Direct brand comparisons</p>
+                        <p><strong>Perplexity:</strong> Scientific evidence-based</p>
+                        <p><strong>Grok:</strong> Specific brand recommendations, safety-first</p>
+                        <p><strong>Gemini:</strong> Health-focused, simplified</p>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <h3 class="card-title">Key Contradictions</h3>
+                    <div class="insight-content">
+                        <p><strong>The Tide Split:</strong> Performance leader vs. safety concern</p>
+                        <p><strong>PVA Debate:</strong> Biodegradability claims disputed</p>
+                        <p><strong>Transparency Gap:</strong> Disclosure vs. effectiveness priorities</p>
+                        <p><strong>Pod Safety:</strong> Convenience vs. ingestion risks</p>
+                    </div>
+                </div>
+
+                <div class="analysis-card">
+                    <h3 class="card-title">Industry Trends</h3>
+                    <div class="insight-content">
+                        <p><strong>Fragrance-Free Rising:</strong> Strong consensus against synthetic scents</p>
+                        <p><strong>Certification Premium:</strong> EPA Safer Choice increasingly valued</p>
+                        <p><strong>Pod Scrutiny:</strong> Universal ingestion concerns</p>
+                        <p><strong>Ingredient Transparency:</strong> Full disclosure rewarded by engines</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="methodology-note">
+                <p><strong>Methodology:</strong> Analysis of 8 AI engines across 73 laundry safety questions. Responses categorized to identify brand recommendation patterns and safety guidance trends.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentHighlight = '';
+
+        function highlightBrand(brand) {
+            currentHighlight = brand;
+            
+            // Update button states
+            document.querySelectorAll('.brand-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            // Apply highlighting
+            document.querySelectorAll('.brand-cell').forEach(cell => {
+                if (currentHighlight && cell.textContent.toLowerCase().includes(currentHighlight.toLowerCase())) {
+                    cell.classList.add('highlighted-brand');
+                } else {
+                    cell.classList.remove('highlighted-brand');
+                }
+            });
+        }
+
+        function showSection(sectionName) {
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            
+            // Show/hide sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                if (sectionName === 'all') {
+                    section.style.display = 'block';
+                } else {
+                    const sectionType = section.getAttribute('data-section');
+                    section.style.display = sectionType === sectionName ? 'block' : 'none';
+                }
+            });
+        }
+
+        function searchTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sections = document.querySelectorAll('.section');
+            
+            sections.forEach(section => {
+                const rows = section.querySelectorAll('tbody tr');
+                let hasVisibleRows = false;
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    let showRow = false;
+                    
+                    if (!searchTerm) {
+                        showRow = true;
+                    } else {
+                        cells.forEach(cell => {
+                            if (cell.textContent.toLowerCase().includes(searchTerm)) {
+                                showRow = true;
+                            }
+                        });
+                    }
+                    
+                    row.style.display = showRow ? '' : 'none';
+                    if (showRow) hasVisibleRows = true;
+                });
+                
+                section.style.display = hasVisibleRows ? 'block' : 'none';
+            });
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', searchTable);
+    </script>
+</body>
+</html>
